@@ -59,7 +59,7 @@ from colour_mapping import (  # noqa: E402
 # -----------------------------------------------------------------------------
 # Experiment settings
 # -----------------------------------------------------------------------------
-DATA_FILE = Path(r"D:\RGB Events\DATASET\new\orange_new\r_3.dat")
+DATA_FILE = Path("data/example.dat")
 SKIP_BEFORE_TIME_US = 0
 
 # These values must match the actual recording setup.
