@@ -36,16 +36,3 @@ ROI Event Response Extraction
 RGB Response Vector Estimation
           ↓
 Pseudo-Colour Mapping
-
----
-
-# Event-Based Colour Response Analysis and Pseudo-Colour Reconstruction
-
-This project investigates several questions:
-
-How does a monochrome event camera respond to sequential RGB illumination?
-Can the event density generated under different illumination colours be used to estimate a relative RGB response?
-How can illumination phases be aligned reliably with asynchronous event streams?
-How do ON and OFF events behave under controlled flashing illumination?
-What are the main limitations of recovering colour information using an event-only sensing pipeline?
-How could the method be extended toward multimodal event-camera and frame-camera perception?
