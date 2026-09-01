@@ -1,10 +1,19 @@
 # Event-Based Colour Response Analysis and Pseudo-Colour Reconstruction
 
-This repository documents my 2026 summer research project at the **University of Manchester**, focusing on colour-response analysis and pseudo-colour reconstruction using a monochrome event camera under sequential RGB illumination.
+This repository documents my 2026 summer research project at the **University of Manchester**, investigating colour-related event responses and pseudo-colour reconstruction using a monochrome event camera under sequential RGB illumination.
 
-The project investigates whether relative colour information can be extracted from asynchronous event measurements by analysing the sensor response to controlled **red, green, and blue illumination**.
+The project explores whether relative colour information can be extracted from asynchronous event measurements by analysing the sensor response to controlled **red, green, and blue illumination**.
 
-The work covers event-stream decoding, temporal synchronisation, ROI-based event-response analysis, RGB response estimation, and pseudo-colour visualisation.
+The work covers:
+
+- event-stream decoding,
+- temporal synchronisation,
+- ROI-based event-response analysis,
+- relative RGB response estimation,
+- illumination-duration robustness analysis,
+- pseudo-colour event visualisation.
+
+The current system should be regarded as an **experimental colour-response analysis framework**, rather than a calibrated or universally robust RGB reconstruction system.
 
 ---
 
@@ -14,11 +23,13 @@ The work covers event-stream decoding, temporal synchronisation, ROI-based event
   <img src="results/demos/pseudo_colour_result.gif" width="850">
 </p>
 
-The animation above shows an example of the final pseudo-colour event output.
+The animation above shows a representative pseudo-colour event output obtained under the **1 ms illumination + 500 µs dark-interval condition**.
 
 Spatial and temporal information is derived from active event pixels, while colour is assigned according to the relative RGB response measured within selected regions of interest.
 
-The current output should be interpreted as an **ROI-level pseudo-colour representation**, rather than a fully calibrated RGB reconstruction.
+Additional experiments using different illumination durations showed that the estimated colour-response vector is sensitive to the temporal illumination profile.
+
+The visualisation should therefore be interpreted as a **condition-specific ROI-level pseudo-colour representation**, rather than a fully calibrated or robust RGB reconstruction.
 
 ---
 
@@ -26,7 +37,7 @@ The current output should be interpreted as an **ROI-level pseudo-colour represe
 
 Conventional frame-based cameras capture complete images at fixed time intervals.
 
-In contrast, an **event camera** records changes in logarithmic brightness asynchronously. Each pixel independently generates an event when the local brightness change exceeds a predefined threshold.
+In contrast, an **event camera** records changes in logarithmic brightness asynchronously. Each pixel independently generates an event when the local brightness change exceeds a predefined contrast threshold.
 
 An event can be represented as:
 
@@ -48,9 +59,9 @@ This sensing principle provides several advantages:
 - reduced motion blur,
 - sparse data representation.
 
-However, a monochrome event camera does not directly provide RGB colour information.
+However, a monochrome event camera does not directly provide conventional RGB colour information.
 
-This project explores whether relative colour information can be inferred by illuminating the scene sequentially with **red, green, and blue light** and analysing the corresponding event responses.
+This project investigates whether relative colour-related information can be inferred by illuminating the scene sequentially with **red, green, and blue light** and analysing the corresponding event responses.
 
 The overall processing pipeline is:
 
@@ -69,12 +80,10 @@ Temporal Synchronisation
           ↓
 ROI Event Response Extraction
           ↓
-RGB Response Vector Estimation
+Relative RGB Response Estimation
           ↓
 Pseudo-Colour Mapping
 ```
-
-The current system should therefore be regarded as an experimental framework for analysing colour-related event responses rather than a fully calibrated RGB reconstruction system.
 
 ---
 
@@ -86,13 +95,15 @@ This project investigates the following questions:
 
 2. Can event density measured under different illumination colours be used to estimate a relative RGB response?
 
-3. How can the RGB illumination sequence be reliably synchronised with an asynchronous event stream?
+3. How can the RGB illumination sequence be synchronised with an asynchronous event stream?
 
 4. How do ON and OFF events behave during controlled illumination changes?
 
-5. What factors limit reliable colour reconstruction using event-camera measurements alone?
+5. How sensitive is the estimated RGB response to illumination duration and temporal integration conditions?
 
-6. How could this approach be extended toward multimodal perception using event cameras, conventional RGB cameras, and other sensing modalities?
+6. What factors limit reliable colour-response estimation using event-camera measurements alone?
+
+7. How could this approach be extended toward multimodal perception using event cameras, conventional RGB cameras, LiDAR, and other sensing modalities?
 
 ---
 
@@ -103,10 +114,10 @@ The experimental system consists of:
 - **Event Camera:** Prophesee EVK4 monochrome event camera
 - **Resolution:** 1280 × 720
 - **Illumination:** Sequential red, green, and blue light
-- **Illumination Control:** Arduino-based control
+- **Illumination Control:** Arduino-based PWM control
 - **Event Representation:** `(x, y, t, p)`
 - **Main Processing Language:** Python
-- **Core Libraries:** NumPy and OpenCV
+- **Core Libraries:** NumPy, OpenCV, Matplotlib, Pillow
 
 <p align="center">
   <img src="results/figures/experimental_setup.jpg" width="750">
@@ -156,7 +167,7 @@ For a selected interval:
 
 events within the interval are extracted and accumulated according to their spatial coordinates and polarity.
 
-This makes it possible to create temporary event representations while retaining the original asynchronous event stream for quantitative analysis.
+This provides a temporary image-like representation while retaining the original asynchronous event stream for quantitative analysis.
 
 ---
 
@@ -168,25 +179,25 @@ An initial approach attempted to locate each illumination stage independently by
 
 However, this method was found to be unreliable.
 
-PWM-controlled illumination can generate several strong event bursts within a single illumination stage.
+PWM-controlled illumination can generate several strong event bursts within a single physical illumination stage.
 
 Therefore:
 
 ```text
-Maximum event count ≠ illumination onset
+Maximum event count ≠ physical illumination onset
 ```
 
-The strongest event peak does not necessarily correspond to the actual beginning of the physical illumination stage.
+The strongest event peak does not necessarily correspond to the actual beginning of an illumination stage.
 
-This observation motivated the development of a more robust temporal synchronisation strategy.
+This observation motivated the development of a fixed-sequence temporal synchronisation strategy.
 
 ---
 
 ## 4. Temporal Synchronisation
 
-Accurate temporal alignment is critical because the colour-response measurements depend directly on which events are assigned to each red, green, and blue illumination stage.
+Accurate temporal alignment is critical because the measured colour response depends directly on which events are assigned to each red, green, and blue illumination stage.
 
-Rather than independently locating the strongest event peak for every illumination stage, the current pipeline uses a two-step strategy:
+Rather than independently locating the strongest event peak for every stage, the current pipeline uses a two-step strategy:
 
 1. detect a plausible onset for the first illumination stage;
 2. generate all subsequent RGB response windows from a fixed illumination timing model.
@@ -195,9 +206,9 @@ Rather than independently locating the strongest event peak for every illuminati
   <img src="results/figures/flash_detection.png" width="850">
 </p>
 
-The first onset is identified by searching for a transition from relatively low event activity to an event pattern that is statistically consistent with the expected RGB illumination sequence.
+The first onset is identified by searching for a transition from relatively low event activity to an event pattern that is statistically consistent with the expected RGB sequence.
 
-Once this initial onset is selected, the remaining illumination stages are calculated using:
+Once this initial phase is selected, the remaining illumination stages are calculated using:
 
 ```text
 t_j = t_0 + j × T
@@ -205,43 +216,37 @@ t_j = t_0 + j × T
 
 where:
 
-- `t_0` is the detected first illumination onset,
+- `t_0` is the detected initial illumination phase,
 - `j` is the illumination-stage index,
 - `T` is the configured adjacent-stage period.
 
-In the current software configuration, the nominal timing is:
+For the representative **1 ms illumination** experiment shown in this repository:
 
 ```text
-Fade duration: 1000 µs
-Dark interval: 500 µs
-Adjacent-stage period: 1500 µs
+Illumination / fade duration: 1000 µs
+Dark interval:               500 µs
+Adjacent-stage period:       1500 µs
 ```
 
-The later RGB stages are therefore **not independently shifted toward nearby event peaks**.
+The later RGB stages are **not independently shifted toward nearby event peaks**.
 
-This is important because PWM-controlled illumination can generate multiple strong event bursts within a single physical illumination stage. As a result:
-
-```text
-Maximum event count ≠ physical illumination onset
-```
-
-Independent peak matching could therefore produce visually convincing but physically inconsistent alignment.
+This avoids fitting each measurement window directly to potentially misleading PWM-induced local maxima.
 
 ### Timing Interpretation
 
-A successful automatic timing check indicates that the observed event activity is statistically consistent with the configured fixed RGB timing model.
+A successful automatic timing check indicates that the observed event activity is statistically consistent with the configured RGB timing model.
 
 It does **not** imply exact hardware-level synchronisation between the illumination controller and the event camera.
 
-In particular, differences between the configured period and the true physical illumination timing may produce accumulated phase error across repeated RGB cycles.
+In particular, the event-derived onset is not necessarily identical to the physical instant at which the LED controller begins its illumination ramp.
 
-For this reason, the timing diagnostic should be inspected when analysing a new recording, and an experimentally measured illumination period should be used whenever available.
+This distinction becomes increasingly important when comparing different illumination durations.
 
 ### Key Observation
 
 > **The pipeline detects one initial illumination phase and preserves a fixed RGB timing model, rather than independently fitting every flash to an event peak.**
 
-This design keeps the temporal analysis tied to the experimental timing assumptions and reduces the risk of overfitting the event stream.
+---
 
 ## 5. Region-of-Interest Analysis
 
@@ -269,7 +274,7 @@ An area-normalised response is therefore calculated as:
 Event Density = Number of Events / ROI Area
 ```
 
-This enables more meaningful comparison between different surfaces or regions.
+For nested regions, an inner ROI can optionally be excluded from the statistical mask of a larger containing ROI. This allows a local test or defect region to be analysed separately from its surrounding reference surface.
 
 ---
 
@@ -277,11 +282,11 @@ This enables more meaningful comparison between different surfaces or regions.
 
 For each ROI, the event responses measured under red, green, and blue illumination are used to construct a **relative RGB response vector**.
 
-The current reconstruction method uses **ON-event density** as the colour-response feature.
+The current baseline reconstruction method uses **ON-event density** as the colour-response feature.
 
-Because the RGB illumination sequence is repeated multiple times, the ON-event density is first measured independently for each illumination colour and each repetition.
+Because the RGB illumination sequence is repeated multiple times, the ON-event density is measured independently for each illumination colour and repetition.
 
-For three repetitions, the measurements can be written as:
+For three repetitions:
 
 ```text
 Red:   R1, R2, R3
@@ -297,13 +302,13 @@ G_peak = max(G1, G2, G3)
 B_peak = max(B1, B2, B3)
 ```
 
-The unnormalised colour-response vector is therefore:
+The unnormalised response is:
 
 ```text
 RGB_peak = [R_peak, G_peak, B_peak]
 ```
 
-The vector is then normalised by the sum of its three components:
+The vector is then sum-normalised:
 
 ```text
 RGB_response =
@@ -322,7 +327,7 @@ R + G + B = 1
   <img src="results/figures/rgb_response.png" width="850">
 </p>
 
-The resulting vector represents the **relative ON-event response of the event-camera system** under the three illumination channels.
+The resulting vector represents the **relative ON-event response of the complete sensor–illumination–surface system** under the three illumination channels.
 
 For example:
 
@@ -346,6 +351,7 @@ because the measured event response depends on the combined effects of:
 - sensor spectral sensitivity,
 - event contrast thresholds,
 - temporal illumination behaviour,
+- previous illumination state,
 - motion,
 - noise.
 
@@ -357,9 +363,9 @@ rather than as calibrated surface colour.
 
 ### Display Colour Scaling
 
-The quantitative RGB response vector described above is preserved for analysis and exported results.
+The quantitative response vector is preserved for analysis.
 
-For visualisation only, the response vector is additionally scaled by its maximum component:
+For visualisation only, it is additionally scaled by its largest component:
 
 ```text
 RGB_display =
@@ -368,11 +374,9 @@ RGB_response / max(RGB_response)
 
 This maximum-based scaling is used only to generate a visible pseudo-colour representation.
 
-It does **not** modify the quantitative RGB response vector used in the analysis.
+It does **not** modify the quantitative response vector.
 
-Additional display-only brightness and desaturation adjustments may also be applied when generating the final pseudo-colour event output.
-
-These visual adjustments are kept separate from the measured response values.
+Additional display-only brightness and desaturation adjustments may also be applied when generating the final pseudo-colour output.
 
 ---
 
@@ -380,11 +384,9 @@ These visual adjustments are kept separate from the measured response values.
 
 Both ON and OFF events were investigated during the experiments.
 
-An ON event is generally produced when the logarithmic brightness observed by a pixel increases sufficiently.
+An ON event is generally produced when logarithmic brightness increases sufficiently, while an OFF event is generated when logarithmic brightness decreases sufficiently.
 
-An OFF event is generally produced when the logarithmic brightness decreases sufficiently.
-
-However, the measured ON/OFF response depends on several factors:
+The measured response depends on several factors:
 
 - the previous illumination state,
 - the direction of the illumination transition,
@@ -405,7 +407,42 @@ The current method consequently focuses on relative event responses under contro
 
 ---
 
-## 8. Pseudo-Colour Reconstruction
+## 8. Illumination-Duration Robustness Analysis
+
+To test whether the estimated response remained stable under different temporal illumination conditions, additional recordings were analysed using four illumination durations:
+
+```text
+500 µs
+1 ms
+10 ms
+100 ms
+```
+
+with a constant:
+
+```text
+500 µs dark interval
+```
+
+The comparison was performed using the same analysis framework and shared ROI definitions where possible.
+
+In addition to the original `ON_PEAK` estimator, alternative aggregation strategies such as median-based ON responses and positive net ON–OFF responses were investigated.
+
+The experiments showed that the estimated RGB response is **not invariant to illumination duration**.
+
+This indicates that the recovered response depends not only on the surface itself, but also on the temporal illumination conditions and event-generation dynamics.
+
+The duration-analysis script is provided as:
+
+```text
+run_duration_experiment.py
+```
+
+The purpose of this analysis is not to select parameters that visually reproduce an expected colour, but to evaluate the stability and limitations of the event-derived response.
+
+---
+
+## 9. Pseudo-Colour Reconstruction
 
 After estimating the relative RGB response of each ROI, the response is mapped back onto active event pixels.
 
@@ -421,17 +458,13 @@ ROI-level RGB response estimate
 
 to generate a pseudo-colour event output.
 
-<p align="center">
-  <img src="results/demos/pseudo_colour_result.gif" width="850">
-</p>
-
 Spatial information continues to come directly from active event pixels.
 
 Colour information is assigned according to the relative RGB response measured for the corresponding ROI.
 
 The current output should therefore be interpreted as:
 
-> **ROI-level pseudo-colour reconstruction based on relative event responses under sequential RGB illumination.**
+> **ROI-level pseudo-colour reconstruction based on relative event responses under controlled sequential RGB illumination.**
 
 It is not equivalent to conventional RGB video reconstruction.
 
@@ -443,9 +476,9 @@ It is not equivalent to conventional RGB video reconstruction.
 
 PWM-controlled illumination can produce multiple strong event bursts within one RGB illumination stage.
 
-Therefore, independently searching for the largest event-count peak can lead to incorrect temporal alignment.
+Therefore, independently searching for the largest event-count peak can lead to incorrect temporal interpretation.
 
-This makes illumination timing one of the most important components of the processing pipeline.
+This makes illumination timing an important component of the processing pipeline.
 
 ---
 
@@ -453,13 +486,37 @@ This makes illumination timing one of the most important components of the proce
 
 Event cameras respond strongly to rapid brightness transitions.
 
-Even relatively small timing errors can significantly alter the number of events measured inside a short response window.
+Even relatively small differences in the temporal measurement window can substantially change the number and distribution of recorded events.
 
-Reliable synchronisation between the illumination system and the event stream is therefore essential for consistent RGB-response analysis.
+The current automatic timing method provides a useful consistency check, but it should not be interpreted as exact hardware-level synchronisation.
 
 ---
 
-## 3. Different Surfaces Produce Different RGB Responses
+## 3. Colour Response Is Sensitive to Illumination Duration
+
+Experiments using **500 µs, 1 ms, 10 ms, and 100 ms illumination durations**, while maintaining a **500 µs dark interval**, produced different relative RGB response vectors.
+
+This shows that the current event-derived colour signature is sensitive to the temporal illumination profile.
+
+A useful conceptual description is:
+
+```text
+Measured colour-related response
+        =
+Surface response
+        +
+Illumination spectrum and intensity
+        +
+Sensor spectral / threshold response
+        +
+Temporal illumination dynamics
+```
+
+The method should therefore be regarded as a **condition-dependent colour-response analysis framework**, rather than a robust colour-reconstruction method across arbitrary illumination timings.
+
+---
+
+## 4. Different Surfaces Produce Different RGB Responses
 
 Selected surfaces generate different relative responses under red, green, and blue illumination.
 
@@ -473,11 +530,11 @@ Surface Reflectance
 Sensor Spectral Response
 ```
 
-This suggests that colour-related information can be present in the event response even when the sensor itself is monochrome.
+This indicates that colour-related information can be present in the event response even when the sensor itself is monochrome.
 
 ---
 
-## 4. Event Count Is Not Equivalent to RGB Intensity
+## 5. Event Count Is Not Equivalent to RGB Intensity
 
 An event camera measures changes in logarithmic brightness rather than absolute optical intensity.
 
@@ -498,15 +555,17 @@ The measured response is affected by:
 - local scene structure,
 - noise.
 
-For this reason, direct conversion from event count to physically accurate RGB intensity is not possible without additional modelling and calibration.
+Direct conversion from event count to physically accurate RGB intensity therefore requires additional modelling and calibration.
 
 ---
 
-## 5. Relative Colour Information Can Still Be Extracted
+## 6. Relative Colour Information Can Still Be Extracted
 
-Although calibrated RGB reconstruction cannot be obtained directly from event counts alone, controlled sequential RGB illumination enables useful **relative colour-response information** to be estimated.
+Although calibrated RGB reconstruction cannot be obtained directly from event counts alone, controlled sequential RGB illumination produces distinguishable colour-related event responses.
 
-These responses can be used to generate an ROI-level pseudo-colour representation of the event stream.
+Under selected experimental conditions, these responses can be used to generate an ROI-level pseudo-colour representation of the event stream.
+
+The robustness experiments, however, demonstrate that this representation remains dependent on the temporal illumination configuration.
 
 ---
 
@@ -516,7 +575,7 @@ These responses can be used to generate an ROI-level pseudo-colour representatio
 
 The red, green, and blue light sources may not produce identical optical power.
 
-Differences in event responses may therefore be caused partly by differences in LED intensity rather than surface reflectance alone.
+Differences in event responses may therefore be caused partly by LED intensity rather than surface reflectance alone.
 
 ---
 
@@ -530,7 +589,7 @@ Quantitative colour reconstruction would require a calibrated model of the senso
 
 ## Event Thresholds
 
-Events are generated only when the change in logarithmic brightness exceeds the internal contrast threshold of the sensor.
+Events are generated only when the change in logarithmic brightness exceeds the sensor's internal contrast threshold.
 
 Consequently, event density is not linearly proportional to absolute optical intensity.
 
@@ -540,7 +599,35 @@ Consequently, event density is not linearly proportional to absolute optical int
 
 PWM-driven illumination introduces additional brightness transitions.
 
-These transitions generate additional events and can make accurate temporal alignment more difficult.
+These transitions generate additional ON and OFF events and can influence both temporal alignment and measured response magnitude.
+
+---
+
+## Illumination-Duration Sensitivity
+
+The estimated RGB response was found to vary with the duration of the RGB illumination ramp.
+
+Experiments using 500 µs, 1 ms, 10 ms, and 100 ms illumination durations produced different relative response vectors even though the dark interval remained fixed.
+
+This suggests that the current response is sensitive to:
+
+- illumination ramp speed,
+- temporal integration conditions,
+- PWM behaviour,
+- event-camera contrast thresholds,
+- the relationship between event-derived onset and physical illumination onset.
+
+Further hardware synchronisation and radiometric calibration would be required before the method could be considered robust across different temporal illumination conditions.
+
+---
+
+## Timing Reference
+
+The automatically detected event onset represents a statistically supported transition in the event stream.
+
+It is not guaranteed to correspond exactly to the physical start time of the LED illumination ramp.
+
+A hardware trigger or independent optical timing reference would provide more precise synchronisation.
 
 ---
 
@@ -573,13 +660,23 @@ A more advanced system could investigate:
 
 ---
 
+## Response Estimator
+
+The current baseline method uses the maximum ON-event response across repeated RGB cycles.
+
+While simple and interpretable, this `ON_PEAK` estimator can be sensitive to unusually strong repetitions.
+
+Median-based and ON–OFF-based alternatives were therefore also explored during robustness analysis.
+
+---
+
 # Future Work
 
 ## 1. Hardware Synchronisation
 
-A direct synchronisation signal between the illumination controller and the event-camera recording system could provide precise illumination timestamps.
+A direct synchronisation signal between the illumination controller and the event-camera recording system could provide precise physical illumination timestamps.
 
-This would significantly reduce uncertainty during temporal alignment.
+This would reduce uncertainty between the actual LED onset and the onset inferred from event activity.
 
 ---
 
@@ -599,36 +696,49 @@ This would help distinguish differences caused by:
 
 The wavelength-dependent response of the event sensor could be characterised experimentally.
 
-A calibrated spectral sensitivity model could then be included in the colour estimation process.
+A calibrated spectral sensitivity model could then be incorporated into colour-response estimation.
 
 ---
 
 ## 4. RGB Camera Ground Truth
 
-A conventional RGB camera could be added to the experimental system to provide reference colour measurements.
+A conventional RGB camera could be added to provide reference colour measurements.
 
 The system could then compare:
 
 ```text
-Event-derived colour estimate
+Event-derived colour response
             ↓
 RGB camera ground truth
 ```
 
-This would enable quantitative evaluation of reconstruction performance.
-
-Possible metrics could include:
+This would enable quantitative evaluation using metrics such as:
 
 - RGB error,
+- chromaticity error,
 - colour distance,
 - reconstruction consistency,
-- confusion between different surface colours.
+- colour classification accuracy.
 
 ---
 
-## 5. Event + RGB Sensor Fusion
+## 5. Robust Temporal Response Modelling
 
-A longer-term extension is to combine the complementary properties of event cameras and conventional frame-based RGB cameras.
+Future work could investigate how colour-related event responses vary across normalised stages of the illumination ramp rather than using only fixed absolute time windows.
+
+Alternative estimators could also include:
+
+- median response,
+- trimmed mean,
+- uncertainty-weighted response,
+- calibrated ON/OFF response models,
+- learning-based mappings.
+
+---
+
+## 6. Event + RGB Sensor Fusion
+
+A longer-term extension is to combine the complementary properties of event cameras and conventional RGB cameras.
 
 An event camera provides:
 
@@ -643,11 +753,11 @@ An RGB camera provides:
 - conventional colour information,
 - dense spatial appearance.
 
-Combining these two modalities could support more robust perception in challenging and highly dynamic environments.
+Combining these modalities could support more robust perception in challenging and highly dynamic environments.
 
 ---
 
-## 6. Event + RGB + LiDAR Perception
+## 7. Event + RGB + LiDAR Perception
 
 The project could also be extended toward multimodal robotic perception by combining:
 
@@ -669,7 +779,7 @@ This direction is particularly relevant to robotic perception and autonomous sys
 
 ---
 
-## 7. Motion Compensation
+## 8. Motion Compensation
 
 Future work could investigate:
 
@@ -680,32 +790,18 @@ Future work could investigate:
 
 to separate motion-generated events from illumination-generated events.
 
-This would be necessary for extending the current controlled experiment toward real-world dynamic scenes.
-
 ---
 
 # Repository Structure
-
-The current and planned repository structure is:
 
 ```text
 event-camera-colour-reconstruction/
 │
 ├── README.md
 ├── .gitignore
-│
 ├── requirements.txt
-│
-├── results/
-│   │
-│   ├── figures/
-│   │   ├── experimental_setup.JPG
-│   │   ├── flash_detection.png
-│   │   ├── roi_response.png
-│   │   └── rgb_response.png
-│   │
-│   └── demos/
-│       └── pseudo_colour_result.gif
+├── run_pipeline.py
+├── run_duration_experiment.py
 │
 ├── src/
 │   ├── dat_decoder.py
@@ -714,8 +810,15 @@ event-camera-colour-reconstruction/
 │   ├── roi_analysis.py
 │   └── colour_mapping.py
 │
-├── experiments/
-│   └── experimental analysis and configuration
+├── results/
+│   ├── figures/
+│   │   ├── experimental_setup.jpg
+│   │   ├── flash_detection.png
+│   │   ├── roi_response.png
+│   │   └── rgb_response.png
+│   │
+│   └── demos/
+│       └── pseudo_colour_result.gif
 │
 └── docs/
     └── technical_report.pdf
@@ -731,44 +834,96 @@ The project primarily uses:
 - **NumPy**
 - **OpenCV**
 - **Matplotlib**
+- **Pillow**
 
-Additional dependencies will be listed in:
+Project dependencies are listed in:
 
 ```text
 requirements.txt
 ```
 
+Install them using:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+---
+
+# Running the Main Pipeline
+
+The main single-recording analysis can be run using:
+
+```bash
+python run_pipeline.py
+```
+
+The input DAT recording and experimental timing parameters should first be configured inside `run_pipeline.py`.
+
+The main pipeline performs:
+
+```text
+DAT decoding
+    ↓
+automatic first-phase detection
+    ↓
+fixed RGB temporal alignment
+    ↓
+ROI selection
+    ↓
+event-response measurement
+    ↓
+relative RGB estimation
+    ↓
+pseudo-colour visualisation
+```
+
+---
+
+# Running the Illumination-Duration Experiment
+
+The cross-duration robustness analysis can be run using:
+
+```bash
+python run_duration_experiment.py
+```
+
+The script is designed to compare the four experimental conditions:
+
+```text
+r1 → 100 ms illumination + 500 µs dark
+r2 → 10 ms illumination  + 500 µs dark
+r3 → 1 ms illumination   + 500 µs dark
+r4 → 500 µs illumination + 500 µs dark
+```
+
+It evaluates:
+
+- RGB response variation across illumination durations,
+- repeatability across RGB cycles,
+- time-normalised event-response rates,
+- alternative response estimators,
+- cross-duration response-vector differences.
+
+Generated quantitative experiment directories are excluded from version control by `.gitignore`.
+
 ---
 
 # Data Availability
 
-The original event-camera recordings are not included in this public repository because of their large file size and data-sharing considerations.
+The original event-camera DAT recordings are not included in this public repository because of their large file size and data-sharing considerations.
 
-Where appropriate, small example recordings may be added for demonstration or reproducibility.
+The public repository contains the processing code, representative results, documentation, and analysis framework.
 
-No confidential, proprietary, or internally restricted research data are intended to be included in this repository.
+No confidential, proprietary, or internally restricted research data are intended to be included.
 
 ---
 
 # Technical Report
 
-A detailed technical report describing the:
+A detailed technical report covering the experimental design, processing methodology, configuration, limitations, and reproducibility of the project is available here:
 
-- experimental design,
-- event-camera processing pipeline,
-- illumination synchronisation strategy,
-- ROI analysis,
-- RGB response estimation,
-- pseudo-colour reconstruction,
-- experimental observations,
-- limitations,
-- future work,
-
-will be provided under:
-
-```text
-docs/technical_report.pdf
-```
+[Technical Report](docs/technical_report.pdf)
 
 ---
 
@@ -809,6 +964,8 @@ LinkedIn: [Ziv Yang](https://www.linkedin.com/in/ziv-yang-8b0aa5349)
 
 This repository documents an undergraduate research project and ongoing experimental work.
 
-The reported RGB response represents **relative ON-event behaviour under controlled sequential RGB illumination**.
+The reported RGB response represents **relative event behaviour under controlled sequential RGB illumination**.
 
 The pseudo-colour output is intended for visualisation and should not be interpreted as calibrated surface RGB or conventional RGB video reconstruction.
+
+Cross-duration experiments further indicate that the estimated colour response is sensitive to the temporal illumination configuration. The current implementation should therefore be regarded as an experimental analysis framework rather than a universally robust colour-reconstruction system.
