@@ -37,6 +37,8 @@ RGB Response Vector Estimation
           ↓
 Pseudo-Colour Mapping
 
+---
+
 # Event-Based Colour Response Analysis and Pseudo-Colour Reconstruction
 
 This project investigates several questions:
