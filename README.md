@@ -109,7 +109,7 @@ The experimental system consists of:
 - **Core Libraries:** NumPy and OpenCV
 
 <p align="center">
-  <img src="results/figures/experimental_setup.JPG" width="750">
+  <img src="results/figures/experimental_setup.jpg" width="750">
 </p>
 
 The RGB illumination sequence is repeated over multiple cycles.
