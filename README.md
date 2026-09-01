@@ -184,37 +184,64 @@ This observation motivated the development of a more robust temporal synchronisa
 
 ## 4. Temporal Synchronisation
 
-Instead of independently detecting every RGB peak, the processing pipeline first identifies the beginning of the first red illumination stage.
+Accurate temporal alignment is critical because the colour-response measurements depend directly on which events are assigned to each red, green, and blue illumination stage.
+
+Rather than independently locating the strongest event peak for every illumination stage, the current pipeline uses a two-step strategy:
+
+1. detect a plausible onset for the first illumination stage;
+2. generate all subsequent RGB response windows from a fixed illumination timing model.
 
 <p align="center">
   <img src="results/figures/flash_detection.png" width="850">
 </p>
 
-The initial illumination transition is detected by identifying a change from relatively low event activity to strong ON-event activity.
+The first onset is identified by searching for a transition from relatively low event activity to an event pattern that is statistically consistent with the expected RGB illumination sequence.
 
-Event activity from multiple spatial regions can be considered together to reduce the influence of local noise.
-
-Once the first red illumination stage is located, subsequent RGB response windows are predicted according to the known periodic timing of the illumination system.
-
-In the current experiment, the measured RGB illumination timing is approximately:
+Once this initial onset is selected, the remaining illumination stages are calculated using:
 
 ```text
-1.268 s
+t_j = t_0 + j × T
 ```
 
-between corresponding stages of the repeated illumination sequence.
+where:
 
-This phase-based strategy provides more consistent temporal alignment than independently selecting local event maxima.
+- `t_0` is the detected first illumination onset,
+- `j` is the illumination-stage index,
+- `T` is the configured adjacent-stage period.
+
+In the current software configuration, the nominal timing is:
+
+```text
+Fade duration: 1000 µs
+Dark interval: 500 µs
+Adjacent-stage period: 1500 µs
+```
+
+The later RGB stages are therefore **not independently shifted toward nearby event peaks**.
+
+This is important because PWM-controlled illumination can generate multiple strong event bursts within a single physical illumination stage. As a result:
+
+```text
+Maximum event count ≠ physical illumination onset
+```
+
+Independent peak matching could therefore produce visually convincing but physically inconsistent alignment.
+
+### Timing Interpretation
+
+A successful automatic timing check indicates that the observed event activity is statistically consistent with the configured fixed RGB timing model.
+
+It does **not** imply exact hardware-level synchronisation between the illumination controller and the event camera.
+
+In particular, differences between the configured period and the true physical illumination timing may produce accumulated phase error across repeated RGB cycles.
+
+For this reason, the timing diagnostic should be inspected when analysing a new recording, and an experimentally measured illumination period should be used whenever available.
 
 ### Key Observation
 
-The experiment showed that:
+> **The pipeline detects one initial illumination phase and preserves a fixed RGB timing model, rather than independently fitting every flash to an event peak.**
 
-> **Independent peak detection can incorrectly select PWM-induced event bursts rather than the true illumination transition.**
-
-The subsequent RGB measurement windows are therefore phase-locked relative to the first detected illumination stage.
-
----
+This design keeps the temporal analysis tied to the experimental timing assumptions and reduces the risk of overfitting the event stream.
 
 ## 5. Region-of-Interest Analysis
 
@@ -780,24 +807,10 @@ LinkedIn: [Ziv Yang](https://www.linkedin.com/in/ziv-yang-8b0aa5349)
 
 ---
 
-# Citation
-
-If you use or refer to this project, please cite:
-
-```bibtex
-@misc{yang2026eventcolour,
-  author       = {Shize Yang},
-  title        = {Event-Based Colour Response Analysis and Pseudo-Colour Reconstruction},
-  year         = {2026},
-  institution  = {University of Manchester},
-  howpublished = {GitHub repository}
-}
-```
-
----
-
 # Disclaimer
 
 This repository documents an undergraduate research project and ongoing experimental work.
 
-The pseudo-colour results represent **relative event responses under controlled sequential RGB illumination** and should not be interpreted as fully calibrated RGB reconstruction.
+The reported RGB response represents **relative ON-event behaviour under controlled sequential RGB illumination**.
+
+The pseudo-colour output is intended for visualisation and should not be interpreted as calibrated surface RGB or conventional RGB video reconstruction.
