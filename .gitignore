@@ -216,3 +216,36 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# ============================================================
+# Event Camera Research Project
+# ============================================================
+
+# Raw event-camera recordings
+*.dat
+*.raw
+*.aedat
+*.aedat4
+
+# Local experimental datasets
+data/
+dataset/
+datasets/
+
+# Automatically generated pipeline outputs
+new_led_full_recording_results/
+
+# Large generated videos
+*.mp4
+*.avi
+*.mov
+
+# Local IDE settings
+.vscode/
+.idea/
+
+# Windows system files
+Thumbs.db
+
+# macOS system files
+.DS_Store
