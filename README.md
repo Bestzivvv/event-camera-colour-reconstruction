@@ -248,36 +248,104 @@ This enables more meaningful comparison between different surfaces or regions.
 
 ## 6. RGB Response Estimation
 
-For each ROI, event responses measured under red, green, and blue illumination are combined into a relative RGB response vector.
+For each ROI, the event responses measured under red, green, and blue illumination are used to construct a **relative RGB response vector**.
 
-The response can be represented as:
+The current reconstruction method uses **ON-event density** as the colour-response feature.
+
+Because the RGB illumination sequence is repeated multiple times, the ON-event density is first measured independently for each illumination colour and each repetition.
+
+For three repetitions, the measurements can be written as:
 
 ```text
-RGB Response = [E_R, E_G, E_B]
+Red:   R1, R2, R3
+Green: G1, G2, G3
+Blue:  B1, B2, B3
 ```
 
-where:
-
-- `E_R` represents the event response under red illumination,
-- `E_G` represents the event response under green illumination,
-- `E_B` represents the event response under blue illumination.
-
-The response vector can then be normalised:
+For each illumination colour, the maximum ON-event density across the repeated measurements is selected:
 
 ```text
-RGB_normalised =
-[E_R, E_G, E_B] / max(E_R, E_G, E_B)
+R_peak = max(R1, R2, R3)
+G_peak = max(G1, G2, G3)
+B_peak = max(B1, B2, B3)
+```
+
+The unnormalised colour-response vector is therefore:
+
+```text
+RGB_peak = [R_peak, G_peak, B_peak]
+```
+
+The vector is then normalised by the sum of its three components:
+
+```text
+RGB_response =
+[R_peak, G_peak, B_peak]
+/
+(R_peak + G_peak + B_peak)
+```
+
+Therefore, for a valid non-zero response:
+
+```text
+R + G + B = 1
 ```
 
 <p align="center">
   <img src="results/figures/rgb_response.png" width="850">
 </p>
 
-The resulting vector describes the **relative response of the complete event-camera system** to the three illumination channels.
+The resulting vector represents the **relative ON-event response of the event-camera system** under the three illumination channels.
 
-These values should not be interpreted as conventional calibrated RGB pixel intensities.
+For example:
 
-Instead, they represent relative colour-related responses under the current experimental conditions.
+```text
+RGB_response = [0.52, 0.32, 0.16]
+```
+
+means that approximately 52% of the measured three-channel ON-peak response is associated with red illumination, 32% with green illumination, and 16% with blue illumination.
+
+This should **not** be interpreted as a conventional RGB pixel value such as:
+
+```text
+RGB = (0.52, 0.32, 0.16)
+```
+
+because the measured event response depends on the combined effects of:
+
+- illumination intensity,
+- illumination spectrum,
+- surface reflectance,
+- sensor spectral sensitivity,
+- event contrast thresholds,
+- temporal illumination behaviour,
+- motion,
+- noise.
+
+The recovered vector is therefore better interpreted as a:
+
+> **relative colour-related event-response signature under controlled RGB illumination**
+
+rather than as calibrated surface colour.
+
+### Display Colour Scaling
+
+The quantitative RGB response vector described above is preserved for analysis and exported results.
+
+For visualisation only, the response vector is additionally scaled by its maximum component:
+
+```text
+RGB_display =
+RGB_response / max(RGB_response)
+```
+
+This maximum-based scaling is used only to generate a visible pseudo-colour representation.
+
+It does **not** modify the quantitative RGB response vector used in the analysis.
+
+Additional display-only brightness and desaturation adjustments may also be applied when generating the final pseudo-colour event output.
+
+These visual adjustments are kept separate from the measured response values.
 
 ---
 
