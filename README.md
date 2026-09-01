@@ -32,3 +32,52 @@ An event can be represented as:
 
 ```text
 e = (x, y, t, p)
+
+where:
+
+x, y represent the pixel coordinates,
+t represents the timestamp,
+p represents the event polarity.
+
+This sensing principle provides several advantages:
+
+high temporal resolution,
+low latency,
+high dynamic range,
+reduced motion blur,
+sparse data representation.
+
+However, a monochrome event camera does not directly provide RGB colour information.
+
+This project explores whether relative colour information can be inferred by illuminating the scene sequentially with red, green, and blue light and analysing the corresponding event responses.
+
+The overall processing pipeline is:
+
+Sequential RGB Illumination
+          ↓
+Monochrome Event Camera
+          ↓
+Event Stream Recording
+          ↓
+DAT Event Decoding
+          ↓
+Flash / Phase Detection
+          ↓
+Temporal Synchronisation
+          ↓
+ROI Event Response Extraction
+          ↓
+RGB Response Vector Estimation
+          ↓
+Pseudo-Colour Mapping
+
+Research Questions
+
+The project investigates the following questions:
+
+How does a monochrome event camera respond to sequential red, green, and blue illumination?
+Can event density measured under different illumination colours be used to estimate a relative RGB response?
+How can the RGB illumination sequence be reliably synchronised with an asynchronous event stream?
+How do ON and OFF events behave during controlled illumination changes?
+What factors limit reliable colour reconstruction using event-camera measurements alone?
+How could this approach be extended toward multimodal perception using event cameras, RGB cameras, and other sensing modalities?
