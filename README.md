@@ -721,8 +721,6 @@ event-camera-colour-reconstruction/
     └── technical_report.pdf
 ```
 
-The source-code structure will continue to be organised as the experimental code is cleaned and documented for public release.
-
 ---
 
 # Software
