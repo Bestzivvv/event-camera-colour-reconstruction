@@ -559,16 +559,6 @@ Direct conversion from event count to physically accurate RGB intensity therefor
 
 ---
 
-## 6. Relative Colour Information Can Still Be Extracted
-
-Although calibrated RGB reconstruction cannot be obtained directly from event counts alone, controlled sequential RGB illumination produces distinguishable colour-related event responses.
-
-Under selected experimental conditions, these responses can be used to generate an ROI-level pseudo-colour representation of the event stream.
-
-The robustness experiments, however, demonstrate that this representation remains dependent on the temporal illumination configuration.
-
----
-
 # Limitations
 
 ## Illumination Calibration
@@ -660,16 +650,6 @@ A more advanced system could investigate:
 
 ---
 
-## Response Estimator
-
-The current baseline method uses the maximum ON-event response across repeated RGB cycles.
-
-While simple and interpretable, this `ON_PEAK` estimator can be sensitive to unusually strong repetitions.
-
-Median-based and ON–OFF-based alternatives were therefore also explored during robustness analysis.
-
----
-
 # Future Work
 
 ## 1. Hardware Synchronisation
@@ -680,19 +660,7 @@ This would reduce uncertainty between the actual LED onset and the onset inferre
 
 ---
 
-## 2. Illumination Calibration
-
-Future experiments could measure the optical output of each RGB illumination channel.
-
-This would help distinguish differences caused by:
-
-- LED intensity,
-- surface reflectance,
-- sensor sensitivity.
-
----
-
-## 3. Sensor Spectral Calibration
+## 2. Sensor Spectral Calibration
 
 The wavelength-dependent response of the event sensor could be characterised experimentally.
 
@@ -700,7 +668,7 @@ A calibrated spectral sensitivity model could then be incorporated into colour-r
 
 ---
 
-## 4. RGB Camera Ground Truth
+## 3. RGB Camera Ground Truth
 
 A conventional RGB camera could be added to provide reference colour measurements.
 
@@ -722,7 +690,7 @@ This would enable quantitative evaluation using metrics such as:
 
 ---
 
-## 5. Robust Temporal Response Modelling
+## 4. Robust Temporal Response Modelling
 
 Future work could investigate how colour-related event responses vary across normalised stages of the illumination ramp rather than using only fixed absolute time windows.
 
@@ -733,62 +701,6 @@ Alternative estimators could also include:
 - uncertainty-weighted response,
 - calibrated ON/OFF response models,
 - learning-based mappings.
-
----
-
-## 6. Event + RGB Sensor Fusion
-
-A longer-term extension is to combine the complementary properties of event cameras and conventional RGB cameras.
-
-An event camera provides:
-
-- high temporal resolution,
-- low latency,
-- reduced motion blur,
-- high dynamic range.
-
-An RGB camera provides:
-
-- absolute intensity information,
-- conventional colour information,
-- dense spatial appearance.
-
-Combining these modalities could support more robust perception in challenging and highly dynamic environments.
-
----
-
-## 7. Event + RGB + LiDAR Perception
-
-The project could also be extended toward multimodal robotic perception by combining:
-
-```text
-Event Camera
-     +
-RGB Camera
-     +
-LiDAR
-```
-
-Such a system could exploit:
-
-- temporal information from event cameras,
-- appearance and colour information from RGB cameras,
-- depth and geometric information from LiDAR.
-
-This direction is particularly relevant to robotic perception and autonomous systems.
-
----
-
-## 8. Motion Compensation
-
-Future work could investigate:
-
-- event-based optical flow,
-- feature tracking,
-- motion estimation,
-- object tracking,
-
-to separate motion-generated events from illumination-generated events.
 
 ---
 
@@ -903,7 +815,6 @@ It evaluates:
 - repeatability across RGB cycles,
 - time-normalised event-response rates,
 - alternative response estimators,
-- cross-duration response-vector differences.
 
 Generated quantitative experiment directories are excluded from version control by `.gitignore`.
 
@@ -937,8 +848,6 @@ The project forms part of my broader research interests in:
 - Computer Vision
 - Robotic Perception
 - Multimodal Sensor Fusion
-- LiDAR Perception
-- Low-Latency Visual Sensing
 - Autonomous Systems
 
 ---
@@ -947,16 +856,11 @@ The project forms part of my broader research interests in:
 
 **Shize Yang**
 
-BEng (Hons) Electronic Engineering  
-University of Manchester
-
 Research interests:
 
 **Event-Based Vision | Computer Vision | Robotic Perception | Sensor Fusion | Autonomous Systems**
 
 GitHub: [Bestzivvv](https://github.com/Bestzivvv)
-
-LinkedIn: [Ziv Yang](https://www.linkedin.com/in/ziv-yang-8b0aa5349)
 
 ---
 
